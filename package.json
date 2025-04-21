@@ -1,37 +1,35 @@
 {
   "name": "next-maps-app",
-  "version": "0.1.0",app",
-  "private": true,0",
-  "scripts": {rue,
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",t",
-    "export": "next export","lint": "next lint"
+    "lint": "next lint",
+    "export": "next build && next export",
     "predeploy": "npm run build && npm run export",
     "deploy": "gh-pages -d out"
-  },.2",
-  "homepage": "https://yourusername.github.io/repo-name",se-js": "^2.38.4",
-  "dependencies": {",
+  },
+  "homepage": "https://teamupswell.github.io/Engagement-Map/",
+  "dependencies": {
     "@googlemaps/js-api-loader": "^1.16.2",
-    "@supabase/supabase-js": "^2.38.4","react-dom": "^18"
+    "@supabase/supabase-js": "^2.38.4",
     "next": "14.0.0",
     "react": "^18",
-    "react-dom": "^18" "^3.54.7",
+    "react-dom": "^18"
   },
   "devDependencies": {
     "@types/google.maps": "^3.54.7",
-    "@types/node": "^20", "^10.4.21",
+    "@types/node": "^20",
     "@types/react": "^18",
-    "@types/react-dom": "^18", "14.0.0",
-    "autoprefixer": "^10.4.21",,
+    "@types/react-dom": "^18",
+    "autoprefixer": "^10.4.21",
     "eslint": "^8",
-    "eslint-config-next": "14.0.0",.4.17",
-    "gh-pages": "^6.3.0", "typescript": "^5"
-    "postcss": "^8.5.3", }
-    "tailwindcss": "^3.4.17",}
-
-
-
-
-}  }    "typescript": "^5"
+    "eslint-config-next": "14.0.0",
+    "gh-pages": "^6.3.0",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5"
+  }
+}

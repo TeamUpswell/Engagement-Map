@@ -1,10 +1,32 @@
-# Next Maps App
+# Engagement Map
 
-This project is a Next.js application that integrates Google Maps with data fetched from a Supabase database. It displays a full-screen map centered on Nigeria, with markers representing data points from the "responses" table.
+An interactive map application built with Next.js App Router that displays survey responses from a Supabase database on a Google Map.
 
 ## Features
 
-- Full-screen Google Map integration using `@react-google-maps/api`.
-- Fetches data from Supabase and displays markers with InfoWindows.
-- Handles loading and error states gracefully.
-- Basic clustering of markers for large datasets.
+- Interactive Google Maps integration with location markers
+- Real-time data fetching from Supabase
+- Color-coded markers based on survey responses
+- Filter responses by different categories
+- Responsive design that works on mobile and desktop
+
+## Tech Stack
+
+- Next.js 14 with App Router
+- Google Maps API for map rendering
+- Supabase for data storage and retrieval
+- React for UI components
+- TypeScript for type safety
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js (version 16 or later)
+- npm or yarn
+- Supabase account
+- Google Maps API key
+
+### Installation
+
+1. Clone the repository:
