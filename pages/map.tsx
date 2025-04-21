@@ -1,70 +1,110 @@
-import { useEffect, useState } from 'react';
-import { GoogleMap, LoadScript, Marker, InfoWindow } from '@react-google-maps/api';
-import { createClient } from '@supabase/supabase-js';
-import LoadingState from '../components/LoadingState';
-import Link from 'next/link';
+// pages/map.tsx
+import { useEffect, useState } from "react";
+import Head from "next/head";
+import Navigation from "../components/Navigation";
+import Map from "../components/Map";
+import LoadingState from "../components/LoadingState";
+import { supabase } from "../lib/supabase";
+import { ResponseData } from "../types";
+import styles from "../styles/Home.module.css";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-const center = { lat: 9.0820, lng: 8.6753 };
-
-const MapPage = () => {
-  const [responses, setResponses] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [selected, setSelected] = useState(null);
+export default function MapPage() {
+  const [isLoading, setIsLoading] = useState(true);
+  const [responses, setResponses] = useState<ResponseData[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [errorDetails, setErrorDetails] = useState<any>(null);
 
   useEffect(() => {
-    const fetchResponses = async () => {
+    async function fetchData() {
       try {
-        const { data, error } = await supabase.from('responses').select('id, lat, lng, answer1');
-        if (error) throw error;
-        setResponses(data);
-      } catch (error) {
-        setError(error.message);
-      } finally {
-        setLoading(false);
-      }
-    };
+        console.log("Fetching data from Supabase...");
+        // Change table name from "responses" to "survey_responses"
+        const { data, error } = await supabase.from("survey_responses").select("*");
 
-    fetchResponses();
+        if (error) {
+          console.error("Supabase error:", error);
+          setErrorDetails(error);
+          throw error;
+        }
+
+        console.log("Data received:", data);
+
+        // Check if data has the expected format
+        if (data && data.length > 0) {
+          const validData = data.filter(
+            (item) =>
+              typeof item.latitude === "number" &&
+              typeof item.longitude === "number"
+          );
+          console.log("Valid data points:", validData.length);
+          setResponses(validData);
+        } else {
+          console.log("No data received or empty array");
+          setResponses([]);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        setError("Failed to load data. Please try again later.");
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchData();
   }, []);
 
-  if (loading) return <LoadingState />;
-  if (error) return <div>Error loading map: {error}</div>;
+  if (isLoading) return <LoadingState />;
+
+  if (error) {
+    return (
+      <div className={styles.container}>
+        <Head>
+          <title>Error - Next Maps App</title>
+        </Head>
+        <main className={styles.main}>
+          <Navigation />
+          <div className={styles.content}>
+            <h2 className={styles.title}>Error</h2>
+            <p className={styles["error-message"]}>{error}</p>
+            {errorDetails && (
+              <div className={styles["error-details"]}>
+                <pre>{JSON.stringify(errorDetails, null, 2)}</pre>
+              </div>
+            )}
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  const markers = responses.map((response) => ({
+    position: { lat: response.latitude, lng: response.longitude },
+    title: `${response.ready_for_vaccine} - ${response.address}`,
+    responseType: response.ready_for_vaccine,
+  }));
+
+  console.log("Rendering map with markers:", markers);
 
   return (
-    <>
-      <LoadScript googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!}>
-        <GoogleMap
-          mapContainerStyle={{ height: '100vh', width: '100%' }}
-          center={center}
-          zoom={6}
-        >
-          {responses.map(response => (
-            <Marker
-              key={response.id}
-              position={{ lat: response.lat, lng: response.lng }}
-              onClick={() => setSelected(response)}
-            />
-          ))}
-          {selected && (
-            <InfoWindow
-              position={{ lat: selected.lat, lng: selected.lng }}
-              onCloseClick={() => setSelected(null)}
-            >
-              <div>{selected.answer1}</div>
-            </InfoWindow>
-          )}
-        </GoogleMap>
-      </LoadScript>
-      <Link href="/">
-        Go Home
-      </Link>
-    </>
-  );
-};
+    <div className={styles.container}>
+      <Head>
+        <title>Map View - Next Maps App</title>
+        <meta name="description" content="View survey responses on a map" />
+      </Head>
 
-export default MapPage;
+      <main className={styles.main}>
+        <Navigation />
+        <div className={styles["map-container"]}>
+          {responses.length === 0 ? (
+            <div className={styles.content}>
+              <p>No data available to display on the map.</p>
+              <p>This could mean your Supabase table is empty.</p>
+            </div>
+          ) : (
+            <Map markers={markers} center={markers[0]?.position} />
+          )}
+        </div>
+      </main>
+    </div>
+  );
+}
