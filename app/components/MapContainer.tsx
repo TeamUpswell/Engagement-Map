@@ -231,7 +231,7 @@ export default function MapContainer() {
         ) : (
           <MapComponent
             responses={filteredResponses}
-            style={{ width: "100%", height: "calc(100vh - 120px)" }} // Adjusted for header with filters
+            style={{ width: "100%", height: "calc(100vh - 120px)" }}
           />
         )}
       </main>
