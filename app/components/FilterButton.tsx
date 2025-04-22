@@ -1,6 +1,13 @@
 'use client';
 
-export default function FilterButton({ active, onClick, count, label }) {
+interface FilterButtonProps {
+  active: boolean;
+  onClick: () => void;
+  count: number;
+  label: string;
+}
+
+export default function FilterButton({ active, onClick, count, label }: FilterButtonProps) {
   return (
     <button
       onClick={onClick}

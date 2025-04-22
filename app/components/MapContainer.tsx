@@ -6,9 +6,21 @@ import FilterButton from "./FilterButton";
 import MapComponent from "./Map";
 import GoogleMapsLoader from "./GoogleMapsLoader";
 
+// Define types for responses
+interface Response {
+  id: string;
+  latitude: number;
+  longitude: number;
+  ready_for_vaccine?: string;
+  cares_for_girl?: boolean;
+  received_hpv_dose?: boolean;
+  joined_whatsapp?: boolean;
+  // Add any other fields from your response object
+}
+
 export default function MapContainer() {
   const [isLoading, setIsLoading] = useState(true);
-  const [responses, setResponses] = useState([]);
+  const [responses, setResponses] = useState<Response[]>([]);
   const [filters, setFilters] = useState({
     all: true,
     yesVaccine: false,
@@ -31,7 +43,9 @@ export default function MapContainer() {
     async function fetchData() {
       try {
         console.log("Fetching data from Supabase...");
-        const { data, error } = await supabase.from("survey_responses").select("*");
+        const { data, error } = await supabase
+          .from("survey_responses")
+          .select("*");
 
         if (error) {
           console.error("Supabase error:", error);
@@ -44,17 +58,22 @@ export default function MapContainer() {
         const newCounts = {
           total: data?.length || 0,
           yesVaccine:
-            data?.filter((r) => r.ready_for_vaccine === "yes").length || 0,
+            data?.filter((r: Response) => r.ready_for_vaccine === "yes")
+              .length || 0,
           noVaccine:
-            data?.filter((r) => r.ready_for_vaccine === "no").length || 0,
+            data?.filter((r: Response) => r.ready_for_vaccine === "no")
+              .length || 0,
           maybeVaccine:
-            data?.filter((r) => r.ready_for_vaccine === "maybe").length || 0,
-          caresForGirl: data?.filter((r) => r.cares_for_girl).length || 0,
-          receivedDose: data?.filter((r) => r.received_hpv_dose).length || 0,
+            data?.filter((r: Response) => r.ready_for_vaccine === "maybe")
+              .length || 0,
+          caresForGirl:
+            data?.filter((r: Response) => r.cares_for_girl).length || 0,
+          receivedDose:
+            data?.filter((r: Response) => r.received_hpv_dose).length || 0,
         };
 
         setCounts(newCounts);
-        setResponses(data || []);
+        setResponses((data as Response[]) || []);
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -67,7 +86,7 @@ export default function MapContainer() {
   }, []);
 
   // Handle filter changes
-  const handleFilterChange = (filterName) => {
+  const handleFilterChange = (filterName: string): void => {
     if (filterName === "all") {
       // If 'All' is clicked, disable other filters
       setFilters({
