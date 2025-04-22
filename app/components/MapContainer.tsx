@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "../../lib/supabase";
-import FilterButton from "./FilterButton";
+import FilterButtonNew from "./FilterButtonNew";
 import MapComponent from "./Map";
 import GoogleMapsLoader from "./GoogleMapsLoader";
 
@@ -169,37 +169,37 @@ export default function MapContainer() {
           >
             <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
               {/* Filter toggle buttons */}
-              <FilterButton
+              <FilterButtonNew
                 active={filters.all}
                 onClick={() => handleFilterChange("all")}
                 count={counts.total}
                 label="All Responses"
               />
-              <FilterButton
+              <FilterButtonNew
                 active={filters.yesVaccine}
                 onClick={() => handleFilterChange("yesVaccine")}
                 count={counts.yesVaccine}
                 label="Ready for Vaccine"
               />
-              <FilterButton
+              <FilterButtonNew
                 active={filters.noVaccine}
                 onClick={() => handleFilterChange("noVaccine")}
                 count={counts.noVaccine}
                 label="Not Ready for Vaccine"
               />
-              <FilterButton
+              <FilterButtonNew
                 active={filters.maybeVaccine}
                 onClick={() => handleFilterChange("maybeVaccine")}
                 count={counts.maybeVaccine}
                 label="Maybe Ready"
               />
-              <FilterButton
+              <FilterButtonNew
                 active={filters.caresForGirl}
                 onClick={() => handleFilterChange("caresForGirl")}
                 count={counts.caresForGirl}
                 label="Cares for Girl"
               />
-              <FilterButton
+              <FilterButtonNew
                 active={filters.receivedDose}
                 onClick={() => handleFilterChange("receivedDose")}
                 count={counts.receivedDose}

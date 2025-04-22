@@ -1,9 +1,0 @@
-(self.webpackChunk_N_E=self.webpackChunk_N_E||[]).push([[601],{712:function(r,e,n){Promise.resolve().then(n.bind(n,1598))},1598:function(r,e,n){"use strict";n.r(e),n.d(e,{default:function(){return Error}});var o=n(7437),t=n(2265);function Error(r){let{error:e,reset:n}=r;return(0,t.useEffect)(()=>{console.error("Application error:",e)},[e]),(0,o.jsxs)("div",{style:{padding:"20px",height:"100vh",width:"100vw",display:"flex",flexDirection:"column",justifyContent:"center",alignItems:"center",backgroundColor:"#f8f9fa"},children:[(0,o.jsx)("h2",{style:{color:"#dc3545"},children:"Something went wrong!"}),(0,o.jsx)("p",{style:{marginBottom:"20px"},children:"There was an error loading the application."}),(0,o.jsx)("button",{onClick:()=>n(),style:{padding:"8px 16px",backgroundColor:"#007bff",color:"white",border:"none",borderRadius:"4px",cursor:"pointer"},children:"Try again"})]})}},622:function(r,e,n){"use strict";/**
- * @license React
- * react-jsx-runtime.production.min.js
- *
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */var o=n(2265),t=Symbol.for("react.element"),i=(Symbol.for("react.fragment"),Object.prototype.hasOwnProperty),c=o.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED.ReactCurrentOwner,s={key:!0,ref:!0,__self:!0,__source:!0};function q(r,e,n){var o,l={},f=null,u=null;for(o in void 0!==n&&(f=""+n),void 0!==e.key&&(f=""+e.key),void 0!==e.ref&&(u=e.ref),e)i.call(e,o)&&!s.hasOwnProperty(o)&&(l[o]=e[o]);if(r&&r.defaultProps)for(o in e=r.defaultProps)void 0===l[o]&&(l[o]=e[o]);return{$$typeof:t,type:r,key:f,ref:u,props:l,_owner:c.current}}e.jsx=q,e.jsxs=q},7437:function(r,e,n){"use strict";r.exports=n(622)}},function(r){r.O(0,[971,472,744],function(){return r(r.s=712)}),_N_E=r.O()}]);
