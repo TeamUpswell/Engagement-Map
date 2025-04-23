@@ -86,10 +86,10 @@ const MapComponent = memo(function MapComponent({
     // Only add markers if showHealthFacilities is true
     if (!showHealthFacilities) return;
 
-    // Custom icon for healthcare facilities
+    // Custom icon for healthcare facilities - REDUCED SIZE HERE
     const healthFacilityIcon = {
       url: '/images/purp.png',
-      scaledSize: new google.maps.Size(32, 32),
+      scaledSize: new google.maps.Size(20, 20), // Reduced from 32x32
     };
 
     // Add healthcare facility markers
@@ -134,10 +134,10 @@ const MapComponent = memo(function MapComponent({
     // Only add markers if showPharmacies is true
     if (!showPharmacies) return;
 
-    // Custom icon for pharmacies
+    // Custom icon for pharmacies - REDUCED SIZE HERE
     const pharmacyIcon = {
       url: '/images/pharma.png',
-      scaledSize: new google.maps.Size(24, 24), // Slightly smaller than health facilities
+      scaledSize: new google.maps.Size(16, 16), // Reduced from 24x24
     };
 
     // Add pharmacy markers
