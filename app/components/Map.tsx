@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef, memo } from 'react';
+import { healthcareCenters, HealthcareCenter } from '../data/healthcareCenters';
+import { pharmacies } from '../data/pharmacies';
 
 // Define types for Response and props
 interface Response {
@@ -16,24 +18,33 @@ interface Response {
 interface MapProps {
   responses: Response[];
   style?: React.CSSProperties;
+  showHealthFacilities?: boolean;
+  showPharmacies?: boolean; // Add new prop
 }
 
 // Use memo to prevent unnecessary re-renders
-const MapComponent = memo(function MapComponent({ responses, style }: MapProps) {
+const MapComponent = memo(function MapComponent({ 
+  responses, 
+  style,
+  showHealthFacilities = true,
+  showPharmacies = false // Default to not showing pharmacies
+}: MapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<google.maps.Map | null>(null);
   const markersRef = useRef<google.maps.Marker[]>([]);
-  const initialZoomRef = useRef<number>(12); // Store initial zoom level
-  const centerRef = useRef<google.maps.LatLng | null>(null); // Store initial center
+  const facilityMarkersRef = useRef<google.maps.Marker[]>([]);
+  const pharmacyMarkersRef = useRef<google.maps.Marker[]>([]); // Add ref for pharmacy markers
+  const initialZoomRef = useRef<number>(12);
+  const centerRef = useRef<google.maps.LatLng | null>(null);
+  const [infoWindow, setInfoWindow] = useState<google.maps.InfoWindow | null>(null);
 
   // Initialize map only once
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
     
-    // Make sure Google Maps API is loaded
     if (window.google && window.google.maps) {
       console.log("Initializing map instance");
-      const initialCenter = { lat: 45.5101618, lng: -122.6961295 }; // Portland, OR
+      const initialCenter = { lat: 8.87, lng: 7.22 }; // Centered on your healthcare facilities area
       const initialZoom = 12;
       
       mapInstanceRef.current = new window.google.maps.Map(mapRef.current, {
@@ -42,18 +53,20 @@ const MapComponent = memo(function MapComponent({ responses, style }: MapProps) 
         mapTypeId: window.google.maps.MapTypeId.ROADMAP,
       });
       
-      // Store initial settings for reference
+      // Create info window instance
+      setInfoWindow(new google.maps.InfoWindow());
+      
+      // Store initial settings
       initialZoomRef.current = initialZoom;
       centerRef.current = new google.maps.LatLng(initialCenter.lat, initialCenter.lng);
       
-      // Add listener to store zoom changes by user
+      // Add listeners to store user map interactions
       mapInstanceRef.current.addListener('zoom_changed', () => {
         if (mapInstanceRef.current) {
           initialZoomRef.current = mapInstanceRef.current.getZoom() || initialZoom;
         }
       });
       
-      // Add listener to store center changes by user
       mapInstanceRef.current.addListener('center_changed', () => {
         if (mapInstanceRef.current) {
           centerRef.current = mapInstanceRef.current.getCenter() || null;
@@ -62,64 +75,191 @@ const MapComponent = memo(function MapComponent({ responses, style }: MapProps) 
     }
   }, []);
 
-  // Handle markers separately when responses change
+  // Add healthcare facilities to the map
   useEffect(() => {
-    if (!mapInstanceRef.current || !responses) return;
+    if (!mapInstanceRef.current || !infoWindow) return;
 
-    // Clear existing markers
+    // Clear existing facility markers
+    facilityMarkersRef.current.forEach(marker => marker.setMap(null));
+    facilityMarkersRef.current = [];
+    
+    // Only add markers if showHealthFacilities is true
+    if (!showHealthFacilities) return;
+
+    // Custom icon for healthcare facilities
+    const healthFacilityIcon = {
+      url: '/images/purp.png',
+      scaledSize: new google.maps.Size(32, 32),
+    };
+
+    // Add healthcare facility markers
+    healthcareCenters.forEach((facility) => {
+      if (facility.latitude && facility.longitude) {
+        const marker = new google.maps.Marker({
+          position: { lat: facility.latitude, lng: facility.longitude },
+          map: mapInstanceRef.current,
+          title: facility.name,
+          icon: healthFacilityIcon,
+          zIndex: 2,
+        });
+        
+        // Add click listener to show info about the facility
+        marker.addListener('click', () => {
+          const content = `
+            <div style="padding: 10px; max-width: 300px;">
+              <h3 style="margin: 0 0 8px 0;">${facility.name}</h3>
+              <p style="margin: 0 0 5px 0;"><strong>Address:</strong> ${facility.address}</p>
+              <p style="margin: 0 0 5px 0;"><strong>Immunization Days:</strong> ${facility.days_of_immunization || 'Not specified'}</p>
+              <p style="margin: 0 0 5px 0;"><strong>Hours:</strong> ${facility.hours_of_work || 'Not specified'}</p>
+            </div>
+          `;
+          
+          infoWindow.setContent(content);
+          infoWindow.open(mapInstanceRef.current, marker);
+        });
+        
+        facilityMarkersRef.current.push(marker);
+      }
+    });
+  }, [showHealthFacilities, infoWindow]);
+
+  // Add pharmacies to the map - NEW EFFECT
+  useEffect(() => {
+    if (!mapInstanceRef.current || !infoWindow) return;
+
+    // Clear existing pharmacy markers
+    pharmacyMarkersRef.current.forEach(marker => marker.setMap(null));
+    pharmacyMarkersRef.current = [];
+    
+    // Only add markers if showPharmacies is true
+    if (!showPharmacies) return;
+
+    // Custom icon for pharmacies
+    const pharmacyIcon = {
+      url: '/images/pharma.png',
+      scaledSize: new google.maps.Size(24, 24), // Slightly smaller than health facilities
+    };
+
+    // Add pharmacy markers
+    pharmacies.forEach((pharmacy) => {
+      if (pharmacy.latitude && pharmacy.longitude) {
+        const marker = new google.maps.Marker({
+          position: { lat: pharmacy.latitude, lng: pharmacy.longitude },
+          map: mapInstanceRef.current,
+          title: pharmacy.name,
+          icon: pharmacyIcon,
+          zIndex: 2,
+        });
+        
+        // Add click listener to show info about the pharmacy
+        marker.addListener('click', () => {
+          const content = `
+            <div style="padding: 10px; max-width: 300px;">
+              <h3 style="margin: 0 0 8px 0;">${pharmacy.name}</h3>
+              <p style="margin: 0 0 5px 0;"><strong>Address:</strong> ${pharmacy.address}</p>
+              <p style="margin: 0 0 5px 0;"><strong>LGA:</strong> ${pharmacy.lga || 'Not specified'}</p>
+              ${pharmacy.days_of_immunization ? `<p style="margin: 0 0 5px 0;"><strong>Immunization Days:</strong> ${pharmacy.days_of_immunization}</p>` : ''}
+              ${pharmacy.hours_of_work ? `<p style="margin: 0 0 5px 0;"><strong>Hours:</strong> ${pharmacy.hours_of_work}</p>` : ''}
+            </div>
+          `;
+          
+          infoWindow.setContent(content);
+          infoWindow.open(mapInstanceRef.current, marker);
+        });
+        
+        pharmacyMarkersRef.current.push(marker);
+      }
+    });
+  }, [showPharmacies, infoWindow]); // This effect only runs when showPharmacies changes
+
+  // Handle response markers separately when responses change
+  useEffect(() => {
+    if (!mapInstanceRef.current || !responses || !infoWindow) return;
+
+    // Clear existing response markers
     markersRef.current.forEach(marker => marker.setMap(null));
     markersRef.current = [];
 
-    // Add new markers
+    // Custom icon for person markers
+    const personIcon = {
+      url: '/images/person.png',  // Path to your person.png icon
+      scaledSize: new google.maps.Size(24, 24),  // Adjust size as needed
+    };
+
+    // Add new response markers
     responses.forEach(response => {
       if (response.latitude && response.longitude) {
+        // Create a marker for each response with the person icon
         const marker = new window.google.maps.Marker({
           position: { lat: response.latitude, lng: response.longitude },
           map: mapInstanceRef.current,
           title: `Response ${response.id}`,
+          icon: personIcon,  // Use the custom person icon
+          zIndex: 1  // Lower z-index than health facilities
+        });
+        
+        // Add click listener to show info about the response
+        marker.addListener('click', () => {
+          const content = `
+            <div style="padding: 10px; max-width: 200px;">
+              <h4 style="margin: 0 0 5px 0;">Survey Response</h4>
+              <p style="margin: 0 0 3px 0;">Ready for vaccine: ${response.ready_for_vaccine || 'Not specified'}</p>
+              ${response.cares_for_girl ? '<p style="margin: 0 0 3px 0;">Cares for girl: Yes</p>' : ''}
+              ${response.received_hpv_dose ? '<p style="margin: 0 0 3px 0;">Received HPV dose: Yes</p>' : ''}
+              ${response.joined_whatsapp ? '<p style="margin: 0 0 3px 0;">Joined WhatsApp: Yes</p>' : ''}
+            </div>
+          `;
+          
+          infoWindow.setContent(content);
+          infoWindow.open(mapInstanceRef.current, marker);
         });
         
         markersRef.current.push(marker);
       }
     });
 
-    // Adjust bounds if we have multiple markers, but limit zoom
-    if (markersRef.current.length > 1) {
+    // Update bounds calculation with all visible markers
+    const allVisibleMarkers = [...markersRef.current];
+    if (showHealthFacilities) {
+      allVisibleMarkers.push(...facilityMarkersRef.current);
+    }
+    if (showPharmacies) {
+      allVisibleMarkers.push(...pharmacyMarkersRef.current);
+    }
+
+    // Adjust map bounds based on visible markers (as you had before)
+    if (allVisibleMarkers.length > 1) {
       const bounds = new window.google.maps.LatLngBounds();
-      markersRef.current.forEach(marker => {
+      allVisibleMarkers.forEach(marker => {
         bounds.extend(marker.getPosition() as google.maps.LatLng);
       });
       
-      // Fit bounds but then check if zoom is too close
       mapInstanceRef.current.fitBounds(bounds);
       
-      // Wait for fitBounds to complete (it's async)
+      // Limit maximum zoom
       setTimeout(() => {
         if (mapInstanceRef.current) {
-          // If zoom is too close (higher number = closer zoom)
           const currentZoom = mapInstanceRef.current.getZoom() || 0;
           if (currentZoom > 15) {
-            mapInstanceRef.current.setZoom(15); // Set a maximum zoom level
+            mapInstanceRef.current.setZoom(15);
           }
         }
       }, 100);
     } 
-    // If only one marker or no markers
-    else if (markersRef.current.length === 1) {
-      // For a single marker, center but use a fixed zoom
-      const position = markersRef.current[0].getPosition();
+    else if (allVisibleMarkers.length === 1) {
+      const position = allVisibleMarkers[0].getPosition();
       if (position) {
         mapInstanceRef.current.setCenter(position);
-        mapInstanceRef.current.setZoom(14); // Good zoom level for a single point
+        mapInstanceRef.current.setZoom(14);
       }
-    } 
-    // If no markers, return to original view
-    else if (markersRef.current.length === 0 && centerRef.current) {
+    }
+    else if (allVisibleMarkers.length === 0 && centerRef.current) {
       mapInstanceRef.current.setCenter(centerRef.current);
       mapInstanceRef.current.setZoom(initialZoomRef.current);
     }
-  }, [responses]);
+  }, [responses, showHealthFacilities, showPharmacies, infoWindow]);
 
+  // Return just the map div, not the button
   return (
     <div ref={mapRef} style={{ width: '100%', height: '100%', ...style }} />
   );

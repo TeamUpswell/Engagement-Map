@@ -5,6 +5,8 @@ import { supabase } from "../../lib/supabase";
 import FilterButtonNew from "./FilterButtonNew";
 import MapComponent from "./Map";
 import GoogleMapsLoader from "./GoogleMapsLoader";
+import { healthcareCenters } from "../data/healthcareCenters";
+import { pharmacies } from "../data/pharmacies"; // Import the pharmacies data
 
 // Define types for responses
 interface Response {
@@ -37,6 +39,9 @@ export default function MapContainer() {
     caresForGirl: 0,
     receivedDose: 0,
   });
+
+  const [showHealthFacilities, setShowHealthFacilities] = useState(true);
+  const [showPharmacies, setShowPharmacies] = useState(false); // Start with pharmacies hidden
 
   // Fetch data from Supabase
   useEffect(() => {
@@ -207,10 +212,30 @@ export default function MapContainer() {
               />
             </div>
 
+            {/* Second row with facility toggles */}
+            <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+              <FilterButtonNew
+                active={showHealthFacilities}
+                onClick={() => setShowHealthFacilities(!showHealthFacilities)}
+                count={healthcareCenters.length}
+                label={`${showHealthFacilities ? 'Hide' : 'Show'} Health Facilities`}
+              />
+              
+              {/* New toggle for pharmacies */}
+              <FilterButtonNew
+                active={showPharmacies}
+                onClick={() => setShowPharmacies(!showPharmacies)}
+                count={pharmacies.length}
+                label={`${showPharmacies ? 'Hide' : 'Show'} Pharmacies`}
+              />
+            </div>
+
             {/* Summary count */}
             <div style={{ fontSize: "14px" }}>
               Currently showing {filteredResponses.length} of {counts.total}{" "}
               total responses
+              {showHealthFacilities && ` and ${healthcareCenters.length} health facilities`}
+              {showPharmacies && ` and ${pharmacies.length} pharmacies`}
             </div>
           </div>
         )}
@@ -231,6 +256,8 @@ export default function MapContainer() {
         ) : (
           <MapComponent
             responses={filteredResponses}
+            showHealthFacilities={showHealthFacilities}
+            showPharmacies={showPharmacies} // Pass the pharmacies toggle state
             style={{ width: "100%", height: "calc(100vh - 120px)" }}
           />
         )}
