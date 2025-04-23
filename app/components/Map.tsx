@@ -89,9 +89,9 @@ const MapComponent = memo(function MapComponent({
     // Create a function to adjust icon size based on zoom
     const getScaledHealthIcon = () => {
       const currentZoom = mapInstanceRef.current?.getZoom() || 12;
-      const baseSize = 16; // Base size at zoom level 12
+      const baseSize = 20; // Increased from 16 to 20
       const scaleFactor = Math.max(0.7, (currentZoom - 8) / 4); // Scale formula
-      const size = Math.max(12, Math.round(baseSize * scaleFactor)); // Min size 12px
+      const size = Math.max(14, Math.round(baseSize * scaleFactor)); // Min size increased to 14px
       
       return {
         url: '/images/purp.png',
@@ -158,9 +158,9 @@ const MapComponent = memo(function MapComponent({
     // Create a function to adjust icon size based on zoom
     const getScaledPharmacyIcon = () => {
       const currentZoom = mapInstanceRef.current?.getZoom() || 12;
-      const baseSize = 16; // Base size at zoom level 12
+      const baseSize = 20; // Increased from 16 to 20
       const scaleFactor = Math.max(0.7, (currentZoom - 8) / 4); // Scale formula
-      const size = Math.max(12, Math.round(baseSize * scaleFactor)); // Min size 12px
+      const size = Math.max(14, Math.round(baseSize * scaleFactor)); // Min size increased to 14px
       
       return {
         url: '/images/pharma.png',
@@ -225,9 +225,9 @@ const MapComponent = memo(function MapComponent({
     // Create a function to adjust icon size based on zoom
     const getScaledPersonIcon = () => {
       const currentZoom = mapInstanceRef.current?.getZoom() || 12;
-      const baseSize = 24; // Base size at zoom level 12 (larger than facility icons)
+      const baseSize = 28; // Increased from 24 to 28
       const scaleFactor = Math.max(0.7, (currentZoom - 8) / 4); // Scale formula
-      const size = Math.max(16, Math.round(baseSize * scaleFactor)); // Min size 16px
+      const size = Math.max(18, Math.round(baseSize * scaleFactor)); // Min size increased to 18px
       
       return {
         url: '/images/person.png',
@@ -274,7 +274,7 @@ const MapComponent = memo(function MapComponent({
       });
     });
 
-    // Update bounds calculation with all visible markers
+    // Update bounds calculation with all visible markers (as you had before)
     const allVisibleMarkers = [...markersRef.current];
     if (showHealthFacilities) {
       allVisibleMarkers.push(...facilityMarkersRef.current);
