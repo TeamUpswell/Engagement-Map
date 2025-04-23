@@ -144,7 +144,7 @@ const MapComponent = memo(function MapComponent({
     };
   }, [showHealthFacilities, infoWindow]);
 
-  // Add pharmacies to the map - NEW EFFECT
+  // Add pharmacies to the map
   useEffect(() => {
     if (!mapInstanceRef.current || !infoWindow) return;
 
@@ -155,10 +155,17 @@ const MapComponent = memo(function MapComponent({
     // Only add markers if showPharmacies is true
     if (!showPharmacies) return;
 
-    // Custom icon for pharmacies - REDUCED SIZE HERE
-    const pharmacyIcon = {
-      url: '/images/pharma.png',
-      scaledSize: new google.maps.Size(20, 20), // Reduced from 24x24
+    // Create a function to adjust icon size based on zoom
+    const getScaledPharmacyIcon = () => {
+      const currentZoom = mapInstanceRef.current?.getZoom() || 12;
+      const baseSize = 16; // Base size at zoom level 12
+      const scaleFactor = Math.max(0.7, (currentZoom - 8) / 4); // Scale formula
+      const size = Math.max(12, Math.round(baseSize * scaleFactor)); // Min size 12px
+      
+      return {
+        url: '/images/pharma.png',
+        scaledSize: new google.maps.Size(size, size),
+      };
     };
 
     // Add pharmacy markers
@@ -168,7 +175,7 @@ const MapComponent = memo(function MapComponent({
           position: { lat: pharmacy.latitude, lng: pharmacy.longitude },
           map: mapInstanceRef.current,
           title: pharmacy.name,
-          icon: pharmacyIcon,
+          icon: getScaledPharmacyIcon(), // Use dynamic icon size
           zIndex: 2,
         });
         
@@ -191,7 +198,21 @@ const MapComponent = memo(function MapComponent({
         pharmacyMarkersRef.current.push(marker);
       }
     });
-  }, [showPharmacies, infoWindow]); // This effect only runs when showPharmacies changes
+
+    // Update icon sizes when zoom changes
+    const zoomChangeListener = mapInstanceRef.current.addListener('zoom_changed', () => {
+      pharmacyMarkersRef.current.forEach(marker => {
+        marker.setIcon(getScaledPharmacyIcon());
+      });
+    });
+
+    // Clean up listener when component unmounts or effect re-runs
+    return () => {
+      if (zoomChangeListener) {
+        google.maps.event.removeListener(zoomChangeListener);
+      }
+    };
+  }, [showPharmacies, infoWindow]);
 
   // Handle response markers separately when responses change
   useEffect(() => {
@@ -201,13 +222,20 @@ const MapComponent = memo(function MapComponent({
     markersRef.current.forEach(marker => marker.setMap(null));
     markersRef.current = [];
 
-    // Custom icon for person markers
-    const personIcon = {
-      url: '/images/person.png',  // Path to your person.png icon
-      scaledSize: new google.maps.Size(24, 24),  // Adjust size as needed
+    // Create a function to adjust icon size based on zoom
+    const getScaledPersonIcon = () => {
+      const currentZoom = mapInstanceRef.current?.getZoom() || 12;
+      const baseSize = 24; // Base size at zoom level 12 (larger than facility icons)
+      const scaleFactor = Math.max(0.7, (currentZoom - 8) / 4); // Scale formula
+      const size = Math.max(16, Math.round(baseSize * scaleFactor)); // Min size 16px
+      
+      return {
+        url: '/images/person.png',
+        scaledSize: new google.maps.Size(size, size),
+      };
     };
 
-    // Add new response markers
+    // Add new response markers with dynamic sizing
     responses.forEach(response => {
       if (response.latitude && response.longitude) {
         // Create a marker for each response with the person icon
@@ -215,8 +243,8 @@ const MapComponent = memo(function MapComponent({
           position: { lat: response.latitude, lng: response.longitude },
           map: mapInstanceRef.current,
           title: `Response ${response.id}`,
-          icon: personIcon,  // Use the custom person icon
-          zIndex: 1  // Lower z-index than health facilities
+          icon: getScaledPersonIcon(),
+          zIndex: 1
         });
         
         // Add click listener to show info about the response
@@ -237,6 +265,13 @@ const MapComponent = memo(function MapComponent({
         
         markersRef.current.push(marker);
       }
+    });
+
+    // Update icon sizes when zoom changes
+    const zoomChangeListener = mapInstanceRef.current.addListener('zoom_changed', () => {
+      markersRef.current.forEach(marker => {
+        marker.setIcon(getScaledPersonIcon());
+      });
     });
 
     // Update bounds calculation with all visible markers
@@ -278,6 +313,13 @@ const MapComponent = memo(function MapComponent({
       mapInstanceRef.current.setCenter(centerRef.current);
       mapInstanceRef.current.setZoom(initialZoomRef.current);
     }
+
+    // Clean up listener when component unmounts or effect re-runs
+    return () => {
+      if (zoomChangeListener) {
+        google.maps.event.removeListener(zoomChangeListener);
+      }
+    };
   }, [responses, showHealthFacilities, showPharmacies, infoWindow]);
 
   // Return just the map div, not the button
