@@ -89,7 +89,7 @@ const MapComponent = memo(function MapComponent({
     // Custom icon for healthcare facilities - REDUCED SIZE HERE
     const healthFacilityIcon = {
       url: '/images/purp.png',
-      scaledSize: new google.maps.Size(20, 20), // Reduced from 32x32
+      scaledSize: new google.maps.Size(16, 16), // Reduced from 20x20 to 16x16
     };
 
     // Add healthcare facility markers
