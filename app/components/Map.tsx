@@ -86,10 +86,17 @@ const MapComponent = memo(function MapComponent({
     // Only add markers if showHealthFacilities is true
     if (!showHealthFacilities) return;
 
-    // Custom icon for healthcare facilities - REDUCED SIZE HERE
-    const healthFacilityIcon = {
-      url: '/images/purp.png',
-      scaledSize: new google.maps.Size(20, 20), // Reduced from 20x20 to 16x16
+    // Create a function to adjust icon size based on zoom
+    const getScaledHealthIcon = () => {
+      const currentZoom = mapInstanceRef.current?.getZoom() || 12;
+      const baseSize = 16; // Base size at zoom level 12
+      const scaleFactor = Math.max(0.7, (currentZoom - 8) / 4); // Scale formula
+      const size = Math.max(12, Math.round(baseSize * scaleFactor)); // Min size 12px
+      
+      return {
+        url: '/images/purp.png',
+        scaledSize: new google.maps.Size(size, size),
+      };
     };
 
     // Add healthcare facility markers
@@ -99,7 +106,7 @@ const MapComponent = memo(function MapComponent({
           position: { lat: facility.latitude, lng: facility.longitude },
           map: mapInstanceRef.current,
           title: facility.name,
-          icon: healthFacilityIcon,
+          icon: getScaledHealthIcon(), // Use dynamic icon size
           zIndex: 2,
         });
         
@@ -121,6 +128,20 @@ const MapComponent = memo(function MapComponent({
         facilityMarkersRef.current.push(marker);
       }
     });
+
+    // Update icon sizes when zoom changes
+    const zoomChangeListener = mapInstanceRef.current.addListener('zoom_changed', () => {
+      facilityMarkersRef.current.forEach(marker => {
+        marker.setIcon(getScaledHealthIcon());
+      });
+    });
+
+    // Clean up listener when component unmounts or effect re-runs
+    return () => {
+      if (zoomChangeListener) {
+        google.maps.event.removeListener(zoomChangeListener);
+      }
+    };
   }, [showHealthFacilities, infoWindow]);
 
   // Add pharmacies to the map - NEW EFFECT
