@@ -89,7 +89,7 @@ const MapComponent = memo(function MapComponent({
     // Custom icon for healthcare facilities - REDUCED SIZE HERE
     const healthFacilityIcon = {
       url: '/images/purp.png',
-      scaledSize: new google.maps.Size(16, 16), // Reduced from 20x20 to 16x16
+      scaledSize: new google.maps.Size(20, 20), // Reduced from 20x20 to 16x16
     };
 
     // Add healthcare facility markers
@@ -137,7 +137,7 @@ const MapComponent = memo(function MapComponent({
     // Custom icon for pharmacies - REDUCED SIZE HERE
     const pharmacyIcon = {
       url: '/images/pharma.png',
-      scaledSize: new google.maps.Size(16, 16), // Reduced from 24x24
+      scaledSize: new google.maps.Size(20, 20), // Reduced from 24x24
     };
 
     // Add pharmacy markers
