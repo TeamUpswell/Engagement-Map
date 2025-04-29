@@ -14,6 +14,9 @@ interface Response {
   received_hpv_dose?: boolean;
   joined_whatsapp?: boolean;
   created_at?: string; // Add created_at field
+  hasDuplicates?: boolean; // Add hasDuplicates field
+  entryCount?: number; // Add entryCount field
+  session_id?: string; // Add session_id field
 }
 
 interface MapProps {
@@ -288,11 +291,19 @@ const MapComponent = memo(function MapComponent({
                 day: 'numeric'
               })
             : "Not available";
-            
+
+          const duplicateInfo = response.hasDuplicates 
+            ? `<p style="color: #e67e22; font-weight: bold; margin: 0 0 3px 0;">
+                One of ${response.entryCount} entries with this session ID
+               </p>`
+            : "";
+
           const content = `
             <div style="padding: 10px; max-width: 200px;">
               <h4 style="margin: 0 0 5px 0;">Survey Response</h4>
+              ${duplicateInfo}
               <p style="margin: 0 0 3px 0;">Date: ${formattedDate}</p>
+              <p style="margin: 0 0 3px 0;">Session ID: ${response.session_id || "Not available"}</p>
               <p style="margin: 0 0 3px 0;">Ready for vaccine: ${
                 response.ready_for_vaccine || "Not specified"
               }</p>

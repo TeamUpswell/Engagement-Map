@@ -18,6 +18,9 @@ interface Response {
   cares_for_girl?: boolean;
   received_hpv_dose?: boolean;
   joined_whatsapp?: boolean;
+  session_id?: string; // Add session_id field
+  hasDuplicates?: boolean; // Add hasDuplicates field
+  entryCount?: number; // Add entryCount field
   // Add any other fields from your response object
 }
 
@@ -60,26 +63,50 @@ export default function MapContainer() {
 
         console.log("Data received:", data?.length || 0, "records");
 
+        // Group responses by session_id to identify duplicates
+        const sessionCounts = {};
+        data.forEach((response) => {
+          if (response.session_id) {
+            sessionCounts[response.session_id] =
+              (sessionCounts[response.session_id] || 0) + 1;
+          }
+        });
+
+        // Add a flag to each response indicating if it has duplicates
+        const processedData = data.map((response) => {
+          return {
+            ...response,
+            hasDuplicates:
+              response.session_id && sessionCounts[response.session_id] > 1,
+            entryCount: response.session_id
+              ? sessionCounts[response.session_id]
+              : 1,
+          };
+        });
+
         // Calculate counts
         const newCounts = {
-          total: data?.length || 0,
+          total: processedData?.length || 0,
           yesVaccine:
-            data?.filter((r: Response) => r.ready_for_vaccine === "yes")
+            processedData?.filter((r: Response) => r.ready_for_vaccine === "yes")
               .length || 0,
           noVaccine:
-            data?.filter((r: Response) => r.ready_for_vaccine === "no")
+            processedData?.filter((r: Response) => r.ready_for_vaccine === "no")
               .length || 0,
           maybeVaccine:
-            data?.filter((r: Response) => r.ready_for_vaccine === "maybe")
-              .length || 0,
+            processedData?.filter((r: Response) =>
+              r.ready_for_vaccine === "maybe"
+            ).length || 0,
           caresForGirl:
-            data?.filter((r: Response) => r.cares_for_girl).length || 0,
+            processedData?.filter((r: Response) => r.cares_for_girl).length ||
+            0,
           receivedDose:
-            data?.filter((r: Response) => r.received_hpv_dose).length || 0,
+            processedData?.filter((r: Response) => r.received_hpv_dose)
+              .length || 0,
         };
 
         setCounts(newCounts);
-        setResponses((data as Response[]) || []);
+        setResponses(processedData || []);
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
