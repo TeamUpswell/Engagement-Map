@@ -13,6 +13,7 @@ interface Response {
   cares_for_girl?: boolean;
   received_hpv_dose?: boolean;
   joined_whatsapp?: boolean;
+  created_at?: string; // Add created_at field
 }
 
 interface MapProps {
@@ -279,9 +280,19 @@ const MapComponent = memo(function MapComponent({
 
         // Add click listener to show info about the response
         marker.addListener("click", () => {
+          // Format the date if available
+          const formattedDate = response.created_at 
+            ? new Date(response.created_at).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+              })
+            : "Not available";
+            
           const content = `
             <div style="padding: 10px; max-width: 200px;">
               <h4 style="margin: 0 0 5px 0;">Survey Response</h4>
+              <p style="margin: 0 0 3px 0;">Date: ${formattedDate}</p>
               <p style="margin: 0 0 3px 0;">Ready for vaccine: ${
                 response.ready_for_vaccine || "Not specified"
               }</p>

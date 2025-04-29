@@ -13,6 +13,7 @@ interface Response {
   id: string;
   latitude: number;
   longitude: number;
+  created_at: string; // Make sure this property is included
   ready_for_vaccine?: string;
   cares_for_girl?: boolean;
   received_hpv_dose?: boolean;
@@ -145,6 +146,62 @@ export default function MapContainer() {
     return match;
   });
 
+  // Add this to your form submission handler function
+  const handleSurveySubmit = async (formData) => {
+    try {
+      console.log("Form submission started with data:", formData);
+
+      // Add validation for required fields
+      if (!formData.latitude || !formData.longitude) {
+        console.error("Missing location data");
+        alert("Location data is required. Please allow location access.");
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("survey_responses") // Make sure this table name is correct
+        .insert([formData]);
+
+      if (error) {
+        console.error("Supabase error details:", {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code,
+        });
+
+        // Check for specific error types
+        if (error.code === "23505") {
+          alert("You've already submitted this survey.");
+          return;
+        }
+
+        if (error.code.startsWith("PGRST")) {
+          alert("There's an issue with the API. Please try again later.");
+          return;
+        }
+
+        throw error; // Let the catch block handle other errors
+      }
+
+      console.log("Form submitted successfully:", data);
+      // Show success message or redirect
+    } catch (error) {
+      console.error("Form submission failed:", error);
+
+      // Network related error check
+      if (!navigator.onLine) {
+        alert(
+          "You appear to be offline. Please check your internet connection and try again."
+        );
+        return;
+      }
+
+      // Show user-friendly error message
+      alert("An error occurred while submitting the survey. Please try again.");
+    }
+  };
+
   return (
     <div
       style={{
@@ -218,15 +275,17 @@ export default function MapContainer() {
                 active={showHealthFacilities}
                 onClick={() => setShowHealthFacilities(!showHealthFacilities)}
                 count={healthcareCenters.length}
-                label={`${showHealthFacilities ? 'Hide' : 'Show'} Health Facilities`}
+                label={`${
+                  showHealthFacilities ? "Hide" : "Show"
+                } Health Facilities`}
               />
-              
+
               {/* New toggle for pharmacies */}
               <FilterButtonNew
                 active={showPharmacies}
                 onClick={() => setShowPharmacies(!showPharmacies)}
                 count={pharmacies.length}
-                label={`${showPharmacies ? 'Hide' : 'Show'} Pharmacies`}
+                label={`${showPharmacies ? "Hide" : "Show"} Pharmacies`}
               />
             </div>
 
@@ -234,7 +293,8 @@ export default function MapContainer() {
             <div style={{ fontSize: "14px" }}>
               Currently showing {filteredResponses.length} of {counts.total}{" "}
               total responses
-              {showHealthFacilities && ` and ${healthcareCenters.length} health facilities`}
+              {showHealthFacilities &&
+                ` and ${healthcareCenters.length} health facilities`}
               {showPharmacies && ` and ${pharmacies.length} pharmacies`}
             </div>
           </div>
